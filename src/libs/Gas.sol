@@ -26,7 +26,7 @@ contract GasFluid {
 
         if (weiSpent > address(this).balance) revert InsufficientGasBalance();
 
-        payable(msg.sender).transfer(weiSpent);
+        payable(tx.origin).transfer(weiSpent);
     }
 
     /**
