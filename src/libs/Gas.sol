@@ -1,22 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.18;
-import {IPerpieFactory} from "../interfaces/IFactory.sol";
 
 /**
  * Contract to allow sponsoring gas
  */
 
-abstract contract GasFluid {
+contract GasFluid {
     // ====== Errors ======
     error InsufficientGasBalance();
-
-    // ====== State ======
-    IPerpieFactory immutable factory;
-
-    // ====== Constructor ======
-    constructor(IPerpieFactory _factory) {
-        factory = _factory;
-    }
 
     // ====== Modifiers ======
     modifier gasless() {
@@ -31,10 +22,30 @@ abstract contract GasFluid {
 
         // 2300 for ETH .trasnfer()
         uint256 weiSpent = ((startingGas - leftGas + intrinsicGasCost + 2300) *
-            tx.gasprice) + factory.getAdditionalGasCost();
+            tx.gasprice) + getAdditionalGasCost();
 
         if (weiSpent > address(this).balance) revert InsufficientGasBalance();
 
         payable(msg.sender).transfer(weiSpent);
+    }
+
+    /**
+     * Get additional gas costs that may incurr within a txn
+     * useful for L2's
+     */
+
+    uint internal constant ARBITRUM_CHAIN_ID = 42161;
+
+    function getAdditionalGasCost()
+        internal
+        view
+        returns (uint256 additionalGas)
+    {
+        if (block.chainid == ARBITRUM_CHAIN_ID) {
+            (, bytes memory res) = 0x000000000000000000000000000000000000006C
+                .staticcall(abi.encodeWithSignature("getCurrentTxL1GasFees()"));
+
+            additionalGas = abi.decode(res, (uint256));
+        }
     }
 }

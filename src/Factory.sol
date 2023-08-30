@@ -1,15 +1,28 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.18;
-import {IPerpieFactory} from "./interfaces/IFactory.sol";
-import {IPerpieWallet} from "./interfaces/IWallet.sol";
 import {Ownable} from "@oz/access/Ownable.sol";
 import {PerpieWallet} from "./Wallet.sol";
+import {ProxyAdmin} from "@oz/proxy/transparent/ProxyAdmin.sol";
+import {TransparentUpgradeableProxy, ITransparentUpgradeableProxy} from "@oz/proxy/transparent/TransparentUpgradeableProxy.sol";
+import "forge-std/console.sol";
 
 /**
  * Factory of Perpie wallets
  */
-contract PerpieFactory is IPerpieFactory, Ownable {
-    // ======= Methods ====== //
+contract PerpieFactory is Ownable {
+    // ======= State ======= //
+    address public latestImplementation;
+    uint8 public version = 1;
+
+    // ======= Admin ======= //
+    function upgradeWalletVersion(
+        address newImplementation
+    ) external onlyOwner {
+        version++;
+        latestImplementation = newImplementation;
+    }
+
+    // ======= Methods ======= //
     /**
      * Deploy a Perpie Wallet
      * @param owner - The owner of the Perpie Wallet
@@ -17,13 +30,31 @@ contract PerpieFactory is IPerpieFactory, Ownable {
      */
     function deploy(
         address owner
-    ) external onlyOwner returns (IPerpieWallet wallet) {
-        wallet = new PerpieWallet{salt: bytes32(abi.encodePacked(owner))}(
-            owner
+    ) external onlyOwner returns (PerpieWallet wallet) {
+        /// Deploy proxy contract with latest impl contract,
+        /// Assign self (factory) as admin temporarely
+        ITransparentUpgradeableProxy proxy = ITransparentUpgradeableProxy(
+            address(
+                new TransparentUpgradeableProxy{
+                    salt: bytes32(abi.encodePacked(owner))
+                }(address(this), address(this), new bytes(0))
+            )
         );
+
+        proxy.upgradeToAndCall(
+            latestImplementation,
+            abi.encodeCall(PerpieWallet.initialize, (owner))
+        );
+
+        // Change admin to proxy itself - Making the wallet self-upgradeable (Verification wont happen
+        // by looking at admin's msg.sender (it will be our executor so wont work), but rather not look at it
+        // at all initially,
+        proxy.changeAdmin(address(proxy));
+
+        wallet = PerpieWallet(address(proxy));
     }
 
-    // ======= View ====== //
+    // ======= View ======= //
     /**
      * Retreive wallet address based on owner
      * @param owner - Owner of the Perpie Wallet
@@ -34,8 +65,8 @@ contract PerpieFactory is IPerpieFactory, Ownable {
         address owner
     ) external view returns (PerpieWallet wallet, bool isDeployed) {
         bytes memory bytecode = abi.encodePacked(
-            type(PerpieWallet).creationCode,
-            abi.encode(owner)
+            type(TransparentUpgradeableProxy).creationCode,
+            abi.encode(address(this), address(this), new bytes(0))
         );
 
         bytes32 hash = keccak256(
@@ -51,13 +82,5 @@ contract PerpieFactory is IPerpieFactory, Ownable {
         isDeployed = address(wallet).code.length > 0;
     }
 
-    /**
-     * Get additional gas costs that may incurr within a txn
-     * useful for L2's
-     */
-    function getAdditionalGasCost()
-        external
-        view
-        returns (uint256 additionalGas)
-    {}
+    receive() external payable {}
 }

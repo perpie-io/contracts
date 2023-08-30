@@ -1,27 +1,25 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.18;
 import {Transaction} from "./Types.sol";
-import {IPerpieFactory} from "./interfaces/IFactory.sol";
-import {IPerpieWallet} from "./interfaces/IWallet.sol";
 import {ECDSA} from "@oz/utils/cryptography/ECDSA.sol";
 import {Ownable} from "@oz/access/Ownable.sol";
 import {GasFluid} from "./libs/Gas.sol";
+import {Initializable} from "@oz/proxy/utils/Initializable.sol";
 
 /**
  * Implementation for Perpie's smart wallet (Account Abstraction)
  */
-contract PerpieWallet is IPerpieWallet, Ownable, GasFluid {
+contract PerpieWallet is Ownable, Initializable, GasFluid {
     // ====== Errors ======
     error TxnsSigsLenMiss();
     error TransactionFailed(bytes returnData);
+    error OnlyInvalidTransactionsProvided();
 
     // ====== States ======
     mapping(bytes sig => bool used) usedSignatures;
 
     // ====== Constructor ======
-    constructor(
-        address owner
-    ) gasless Ownable() GasFluid(IPerpieFactory(msg.sender)) {
+    function initialize(address owner) external gasless {
         _transferOwnership(owner);
     }
 
@@ -43,7 +41,10 @@ contract PerpieWallet is IPerpieWallet, Ownable, GasFluid {
             Transaction memory transaction = transactions[i];
             bytes memory sig = signatures[i];
 
-            if (!isValidSignature(transaction, sig)) continue;
+            if (!isValidSignature(transaction, sig)) {
+                if (transactions.length > 1) continue;
+                else revert OnlyInvalidTransactionsProvided();
+            }
 
             usedSignatures[sig] = true;
 
@@ -53,13 +54,6 @@ contract PerpieWallet is IPerpieWallet, Ownable, GasFluid {
             if (!success) revert TransactionFailed(returnData);
         }
     }
-
-
-    /**
-     * Convenience function to withdraw token/ETH
-     * @param token - token of address (or address(0) for ETH)
-     * @param sig 
-     */
 
     // ====== Internal ======
     /**
@@ -76,6 +70,6 @@ contract PerpieWallet is IPerpieWallet, Ownable, GasFluid {
             keccak256(abi.encodePacked(txn.to, txn.callData, txn.value)),
             sig
         );
-        isSignatureValid = signer == owner();
+        isSignatureValid = signer == owner() && !usedSignatures[sig];
     }
 }
