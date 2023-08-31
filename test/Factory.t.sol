@@ -60,13 +60,16 @@ contract PerpieFactoryTest is Test {
         // Not required for the test, just making sure it works
         factory.upgradeWalletVersion(address(newImplementation));
 
+        uint256 currentNonce = wallet.nonce();
+
         Transaction memory upgradeTxn = Transaction({
             to: address(wallet),
             value: 0,
             callData: abi.encodeCall(
                 ITransparentUpgradeableProxy.upgradeTo,
                 (address(newImplementation))
-            )
+            ),
+            nonce: currentNonce
         });
 
         Transaction[] memory txns = new Transaction[](1);
@@ -78,7 +81,8 @@ contract PerpieFactoryTest is Test {
                 abi.encodePacked(
                     upgradeTxn.to,
                     upgradeTxn.callData,
-                    upgradeTxn.value
+                    upgradeTxn.value,
+                    upgradeTxn.nonce
                 )
             )
         );

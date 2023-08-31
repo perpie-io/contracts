@@ -6,6 +6,7 @@ import {PerpieFactory} from "../src/Factory.sol";
 import "forge-std/console.sol";
 import {ITransparentUpgradeableProxy} from "@oz/proxy/transparent/TransparentUpgradeableProxy.sol";
 import {Transaction} from "../src/Types.sol";
+import {Nonces} from "../src/libs/Nonces.sol";
 
 /**
  * Tests for the Perpie smart wallet FACTORY
@@ -45,6 +46,7 @@ contract PerpieFactoryTest is Test {
     }
 
     function testTxnMustHaveValidSig() external {
+        uint256 currentNonce = wallet.nonce();
         Transaction memory txn = Transaction({
             to: address(500),
             callData: abi.encodePacked(
@@ -56,7 +58,8 @@ contract PerpieFactoryTest is Test {
                 "KEKKK",
                 address(412412)
             ),
-            value: 0
+            value: 0,
+            nonce: currentNonce
         });
 
         // Invalid sig
@@ -80,6 +83,8 @@ contract PerpieFactoryTest is Test {
     }
 
     function testReplayAttack() external {
+        uint256 currentNonce = wallet.nonce();
+
         Transaction memory txn = Transaction({
             to: address(500),
             callData: abi.encodePacked(
@@ -91,7 +96,8 @@ contract PerpieFactoryTest is Test {
                 "KEKKK",
                 address(412412)
             ),
-            value: 0
+            value: 0,
+            nonce: currentNonce
         });
 
         // Invalid sig
@@ -107,7 +113,12 @@ contract PerpieFactoryTest is Test {
         wallet.executeTransactions(txns, sigs);
 
         // Sig has been used so txn must revert (since we only used 1 sig)
-        vm.expectRevert();
+        vm.expectRevert(
+            bytes.concat(
+                Nonces.InvalidAccountNonce.selector,
+                abi.encode(wallet.nonce())
+            )
+        );
         wallet.executeTransactions(txns, sigs);
     }
 
@@ -116,7 +127,9 @@ contract PerpieFactoryTest is Test {
     ) internal view returns (bytes memory sig) {
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(
             privKey,
-            keccak256(abi.encodePacked(txn.to, txn.callData, txn.value))
+            keccak256(
+                abi.encodePacked(txn.to, txn.callData, txn.value, txn.nonce)
+            )
         );
 
         sig = abi.encodePacked(r, s, v);
@@ -127,7 +140,9 @@ contract PerpieFactoryTest is Test {
     ) internal view returns (bytes memory sig) {
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(
             privKey + 1,
-            keccak256(abi.encodePacked(txn.to, txn.callData, txn.value))
+            keccak256(
+                abi.encodePacked(txn.to, txn.callData, txn.value, txn.nonce)
+            )
         );
 
         sig = abi.encodePacked(r, s, v);

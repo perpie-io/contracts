@@ -9,4 +9,5 @@ struct Transaction {
     address to;
     bytes callData;
     uint256 value;
+    uint256 nonce;
 }

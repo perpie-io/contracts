@@ -5,18 +5,16 @@ import {ECDSA} from "@oz/utils/cryptography/ECDSA.sol";
 import {Ownable} from "@oz/access/Ownable.sol";
 import {GasFluid} from "./libs/Gas.sol";
 import {Initializable} from "@oz/proxy/utils/Initializable.sol";
+import {Nonces} from "./libs/Nonces.sol";
 
 /**
  * Implementation for Perpie's smart wallet (Account Abstraction)
  */
-contract PerpieWallet is Ownable, Initializable, GasFluid {
+contract PerpieWallet is Ownable, Initializable, GasFluid, Nonces {
     // ====== Errors ======
     error TxnsSigsLenMiss();
     error TransactionFailed(bytes returnData);
-    error OnlyInvalidTransactionsProvided();
-
-    // ====== States ======
-    mapping(bytes sig => bool used) usedSignatures;
+    error InvalidSignature();
 
     // ====== Constructor ======
     function initialize(address owner) external gasless {
@@ -41,12 +39,7 @@ contract PerpieWallet is Ownable, Initializable, GasFluid {
             Transaction memory transaction = transactions[i];
             bytes memory sig = signatures[i];
 
-            if (!isValidSignature(transaction, sig)) {
-                if (transactions.length > 1) continue;
-                else revert OnlyInvalidTransactionsProvided();
-            }
-
-            usedSignatures[sig] = true;
+            if (!isValidSignature(transaction, sig)) revert InvalidSignature();
 
             (bool success, bytes memory returnData) = address(transaction.to)
                 .call{value: transaction.value}(transaction.callData);
@@ -65,11 +58,18 @@ contract PerpieWallet is Ownable, Initializable, GasFluid {
     function isValidSignature(
         Transaction memory txn,
         bytes memory sig
-    ) internal view returns (bool isSignatureValid) {
+    ) internal returns (bool isSignatureValid) {
         (address signer, ) = ECDSA.tryRecover(
-            keccak256(abi.encodePacked(txn.to, txn.callData, txn.value)),
+            keccak256(
+                abi.encodePacked(
+                    txn.to,
+                    txn.callData,
+                    txn.value,
+                    _useCheckedNonce(txn.nonce)
+                )
+            ),
             sig
         );
-        isSignatureValid = signer == owner() && !usedSignatures[sig];
+        isSignatureValid = signer == owner();
     }
 }
