@@ -26,6 +26,7 @@ contract PerpieFactoryTest is Test {
     function testAddressDetermination() external {
         (PerpieWallet desiredAddress, ) = factory.getWallet(Bob);
 
+
         PerpieWallet wallet = factory.deploy(Bob);
 
         assertEq(
@@ -46,6 +47,7 @@ contract PerpieFactoryTest is Test {
     }
 
     function testProxyAdminstration() external {
+        vm.prank(Bob);
         PerpieWallet wallet = factory.deploy(Bob);
 
         vm.prank(address(wallet));

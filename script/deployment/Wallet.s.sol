@@ -11,7 +11,7 @@ import {PerpieWallet} from "../../src/Wallet.sol";
 
 contract UpgradeWalletVersion is MultichainScript {
     PerpieFactory[] factories = [
-        PerpieFactory(payable(0xffc717f423C3c9F1A9304c8047Dbe47947570175))
+        PerpieFactory(payable(0x656c1A62f0Ef1907560Bcdb59938E08d770cfE06))
     ];
 
     function run() external {

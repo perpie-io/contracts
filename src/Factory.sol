@@ -30,7 +30,7 @@ contract PerpieFactory is Ownable {
      */
     function deploy(
         address owner
-    ) external onlyOwner returns (PerpieWallet wallet) {
+    ) external  returns (PerpieWallet wallet) {
         /// Deploy proxy contract with latest impl contract,
         /// Assign self (factory) as admin temporarely
         ITransparentUpgradeableProxy proxy = ITransparentUpgradeableProxy(

@@ -4,3 +4,6 @@
 [submodule "lib/openzeppelin-contracts"]
 	path = lib/openzeppelin-contracts
 	url = https://github.com/OpenZeppelin/openzeppelin-contracts
+[submodule "lib/gmx-contracts"]
+	path = lib/gmx-contracts
+	url = https://github.com/gmx-io/gmx-contracts

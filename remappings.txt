@@ -1,1 +1,3 @@
 @oz/=lib/openzeppelin-contracts/contracts/
+
+@gmx/=lib/gmx-contracts/contracts/
