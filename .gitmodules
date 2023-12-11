@@ -7,3 +7,6 @@
 [submodule "lib/gmx-contracts"]
 	path = lib/gmx-contracts
 	url = https://github.com/gmx-io/gmx-contracts
+[submodule "lib/modulekit"]
+	path = lib/modulekit
+	url = https://github.com/rhinestonewtf/modulekit
