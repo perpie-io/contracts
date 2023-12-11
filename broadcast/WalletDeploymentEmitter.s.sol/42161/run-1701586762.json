@@ -1,0 +1,31 @@
+{
+  "transactions": [
+    {
+      "hash": null,
+      "transactionType": "CREATE",
+      "contractName": "PerpieWalletDeploymentEmitter",
+      "contractAddress": "0xDB5DCb613f993c50F53aa3C96aadA24eD856eBCB",
+      "function": null,
+      "arguments": null,
+      "transaction": {
+        "type": "0x02",
+        "from": "0xdc658f0ad6ffa2c2ae74c5d4d86ec92ce4e0fa22",
+        "gas": "0x1706f6",
+        "value": "0x0",
+        "data": "0x6080604052348015600f57600080fd5b50609b8061001e6000396000f3fe6080604052348015600f57600080fd5b506004361060285760003560e01c8063faf53cf014602d575b600080fd5b60336035565b005b604051339081907f82e25f8235ba727c1d0fe5ce03fb4442564a927c3114c1d624574faaf11590cc90600090a25056fea26469706673582212203852837816f1fc33e0c9569401be562f84541202224a332060c6db08ab896e1564736f6c63430008140033",
+        "nonce": "0xc",
+        "accessList": []
+      },
+      "additionalContracts": [],
+      "isFixedGasLimit": false
+    }
+  ],
+  "receipts": [],
+  "libraries": [],
+  "pending": [],
+  "returns": {},
+  "timestamp": 1701586762,
+  "chain": 42161,
+  "multi": false,
+  "commit": "0796bb6"
+}
