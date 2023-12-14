@@ -1,3 +1,8 @@
 @oz/=lib/openzeppelin-contracts/contracts/
-
-@gmx/=lib/gmx-contracts/contracts/
+@gmxv1/=lib/gmx-contracts/contracts/
+@rhinestone/=lib/modulekit/src/
+@src/=src/
+@perpie/=src/
+@perpie/modules/=src/modules/
+@tests/=test/
+solady/=lib/solady/src/

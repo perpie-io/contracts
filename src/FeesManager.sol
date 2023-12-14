@@ -23,7 +23,7 @@ contract FeesManager is Ownable, Initializable {
         feesBps = newBps;
     }
 
-    fallback() external {}
+    fallback() external payable {}
 
     receive() external payable {}
 }

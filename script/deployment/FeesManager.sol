@@ -15,16 +15,15 @@ contract UpgradeFeesManager is MultichainScript {
                 "FEESMANAGER_PROXY_ADDRESS"
             );
 
-
             FeesManager newImplementation = new FeesManager();
 
-            // /// Deploy proxy contract with latest impl contract,
-            // /// Assign self (factory) as admin temporarely
-            // ITransparentUpgradeableProxy proxy = ITransparentUpgradeableProxy(
-            //     feesManagerProxy
-            // );
+            /// Deploy proxy contract with latest impl contract,
+            /// Assign self (factory) as admin temporarely
+            ITransparentUpgradeableProxy proxy = ITransparentUpgradeableProxy(
+                feesManagerProxy
+            );
 
-            // proxy.upgradeTo(address(newImplementation));
+            proxy.upgradeTo(address(newImplementation));
         }
     }
 }
@@ -59,6 +58,3 @@ contract DeployFeesManagerCompletelyNew is MultichainScript {
         }
     }
 }
-
-
-
