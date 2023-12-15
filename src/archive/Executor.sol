@@ -1,5 +1,5 @@
-// // SPDX-License-Identifier: MIT
-// pragma solidity ^0.8.18;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.18;
 
 // import {ERC20ModuleKit} from "@rhinestone/modulekit/integrations/ERC20Actions.sol";
 // import {ExecutorBase} from "@rhinestone/modulekit/ExecutorBase.sol";

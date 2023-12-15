@@ -1,5 +1,5 @@
-// // SPDX-License-Identifier: MIT
-// pragma solidity ^0.8.18;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.18;
 // import {FeesManager} from "@src/FeesManager.sol";
 // import {ERC20ModuleKit} from "@rhinestone/modulekit/integrations/ERC20Actions.sol";
 // import {IERC20} from "forge-std/interfaces/IERC20.sol";
