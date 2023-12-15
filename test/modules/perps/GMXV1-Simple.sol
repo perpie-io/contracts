@@ -11,12 +11,15 @@ import {GMXV1FeesModule} from "@perpie/modules/perps/GMXV1/Simple.sol";
 import {IPositionRouter, IVault, IOrderBook} from "@perpie/modules/perps/GMXV1/Interfaces.sol";
 import {ArbitrumTest} from "@tests/Chains.sol";
 import {console} from "forge-std/console.sol";
+import {StdStorage, stdStorage} from "forge-std/StdStorage.sol";
 
 interface ModularAccount {
     function enableModule(address module) external;
 }
 
 contract GMXV1FeesModuleTest is ArbitrumTest {
+    using stdStorage for StdStorage;
+
     GMXV1FeesModule gmxv1FeeModule;
     FeesManager feesManager;
 
@@ -163,6 +166,64 @@ contract GMXV1FeesModuleTest is ArbitrumTest {
         );
     }
 
+    function testIncreaseOrder(
+        uint256 _sizeDelta,
+        bool _isLong,
+        uint8 leverage
+    ) external {
+        _assumeRealisticInputs(leverage, _sizeDelta, usdt);
+
+        uint256 amountIn = _getAmountIn(_sizeDelta, leverage, _isLong, usdt);
+
+        uint256 vaultBalanceBefore = usdt.balanceOf(address(vault));
+        uint256 orderbookBalanceBefore = usdt.balanceOf(address(orderbook));
+
+        uint256 feesManagerBalanceBefore = usdt.balanceOf(address(feesManager));
+
+        // No tokens in user's wallet
+        _increaseOrder(_sizeDelta, _isLong, amountIn, true);
+        // We give him tokens and now he tries
+        _increaseOrder(_sizeDelta, _isLong, amountIn, false);
+
+        uint256 expectedFee = estimateFee(_sizeDelta, _isLong, usdt);
+        uint256 chargedFee = usdt.balanceOf(address(feesManager)) -
+            feesManagerBalanceBefore;
+
+        assertEq(
+            expectedFee,
+            chargedFee,
+            _makeError("Increase Order - Charged fee is not the expected fee")
+        );
+
+        uint256 expectedInputAmount = amountIn - expectedFee;
+
+        console.log(
+            "SA, Orderbook, Vault",
+            usdt.balanceOf(address(vault)) - vaultBalanceBefore,
+            usdt.balanceOf(address(orderbook)) - orderbookBalanceBefore,
+            usdt.balanceOf(address(smartAccount))
+        );
+
+        uint256 orderbookBalanceDiff = usdt.balanceOf(address(orderbook)) -
+            orderbookBalanceBefore;
+        uint256 vaultBalanceDiff = usdt.balanceOf(address(vault)) -
+            vaultBalanceBefore;
+
+        assertEq(
+            _isLong ? vaultBalanceDiff : orderbookBalanceDiff,
+            expectedInputAmount,
+            _makeError(
+                "Increase Order - vault did not receive correct amountIn"
+            )
+        );
+
+        assertEq(
+            smartAccount.balance,
+            0,
+            "Increase Order - Smart Account has USDT left after increase"
+        );
+    }
+
     function _increasePosition(
         uint256 _sizeDelta,
         bool _isLong,
@@ -205,8 +266,6 @@ contract GMXV1FeesModuleTest is ArbitrumTest {
         uint256 amountIn,
         bool expectRevert
     ) internal {
-        deal(smartAccount, amountIn);
-
         address[] memory path = _makePath(
             address(weth),
             address(wbtc),
@@ -240,6 +299,87 @@ contract GMXV1FeesModuleTest is ArbitrumTest {
         );
         vm.stopPrank();
     }
+
+    function _increaseOrder(
+        uint256 _sizeDelta,
+        bool _isLong,
+        uint256 amountIn,
+        bool expectRevert
+    ) internal {
+        uint256 executionFee = _executionFee();
+
+        deal(smartAccount, executionFee);
+
+        uint256 price = _getPrice(address(usdt), _isLong);
+
+        if (expectRevert) {
+            vm.expectRevert();
+        } else {
+            deal(address(usdt), smartAccount, amountIn);
+        }
+
+        vm.startPrank(smartAccount);
+
+        address[] memory path = _makePath(
+            address(usdt),
+            address(wbtc),
+            _isLong
+        );
+
+        gmxv1FeeModule.createIncreaseOrder{value: executionFee}(
+            path,
+            amountIn,
+            address(wbtc),
+            0,
+            _sizeDelta,
+            path[0],
+            _isLong,
+            price + 10,
+            true,
+            executionFee,
+            path[0] == address(weth)
+        );
+        vm.stopPrank();
+    }
+
+    // function _increaseOrderETH(
+    //     uint256 _sizeDelta,
+    //     bool _isLong,
+    //     uint256 amountIn,
+    //     bool expectRevert
+    // ) internal {
+    //     uint256 executionFee = _executionFee();
+
+    //     deal(smartAccount, executionFee);
+
+    //     if (expectRevert) {
+    //         vm.expectRevert();
+    //     } else {
+    //         deal(smartAccount, amountIn + executionFee);
+    //     }
+
+    //     uint256 price = _getPrice(address(tokenIn), _isLong);
+
+    //     vm.startPrank(smartAccount);
+
+    //     gmxv1FeeModule.createIncreaseOrder{
+    //         value: executionFee +
+    //             (address(tokenIn) == address(weth) ? amountIn : 0)
+    //     }(
+    //         _makePath(address(tokenIn), address(wbtc), _isLong),
+    //         amountIn,
+    //         address(wbtc),
+    //         0,
+    //         _sizeDelta,
+    //         _isLong ? address(wbtc) : address(usdt),
+    //         _isLong,
+    //         price + 10,
+    //         true,
+    //         executionFee,
+    //         address(tokenIn) == address(weth)
+    //     );
+    //     vm.stopPrank();
+    // }
 
     function _makePath(
         address inputToken,
@@ -284,7 +424,7 @@ contract GMXV1FeesModuleTest is ArbitrumTest {
         uint8 leverage,
         uint256 sizeDelta,
         IERC20Metadata token
-    ) internal view {
+    ) internal {
         // Realistic leverage
         vm.assume(leverage > uint8(1) && leverage < uint8(50));
 
@@ -292,6 +432,46 @@ contract GMXV1FeesModuleTest is ArbitrumTest {
         vm.assume(sizeDelta > 110 * 10 ** 30);
 
         vm.assume(sizeDelta < type(uint256).max / 10 ** token.decimals() + 1);
+
+        uint256 minUsdPurchaseAmount = orderbook.minPurchaseTokenAmountUsd();
+
+        uint256 usdPurchaseAmount = sizeDelta / leverage;
+
+        // To be safe
+        vm.assume(usdPurchaseAmount > minUsdPurchaseAmount * 2);
+
+        address gov = vault.gov();
+
+        vm.startPrank(gov);
+        // Be safe in usdg amounts avoid revert
+
+        vault.setTokenConfig(
+            address(token),
+            token.decimals(),
+            vault.tokenWeights(address(token)),
+            vault.minProfitBasisPoints(address(token)),
+            0,
+            vault.stableTokens(address(token)),
+            vault.shortableTokens(address(token))
+        );
+
+        stdstore
+            .target(address(vault))
+            .sig("poolAmounts(address)")
+            .with_key(address(token))
+            .depth(0)
+            .checked_write(vault.poolAmounts(address(token)) / 2);
+        stdstore
+            .target(address(vault))
+            .sig("reservedAmounts(address)")
+            .with_key(address(token))
+            .depth(0)
+            .checked_write(vault.poolAmounts(address(token)) / 10);
+
+        vault.setBufferAmount(address(token), type(uint256).max);
+        vault.setBufferAmount(address(wbtc), type(uint256).max);
+
+        vm.stopPrank();
     }
 
     function _makeError(

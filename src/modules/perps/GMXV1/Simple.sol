@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.18;
 
-import {console} from "forge-std/console.sol";
-
 import {ERC20ModuleKit} from "@rhinestone/modulekit/integrations/ERC20Actions.sol";
 import {ExecutorBase} from "@rhinestone/modulekit/ExecutorBase.sol";
 import {IERC20} from "forge-std/interfaces/IERC20.sol";
@@ -10,12 +8,27 @@ import {PerpFeesModule} from "@perpie/modules/perps/SimplePerpFeesModule.sol";
 import {IPositionRouter, IOrderBook, IVault} from "./Interfaces.sol";
 import {FeesManager} from "@perpie/FeesManager.sol";
 import {IExecutorManager} from "@rhinestone/modulekit/IExecutor.sol";
+import {Ownable} from "@oz/access/Ownable.sol";
 
-contract GMXV1FeesModule is PerpFeesModule {
+contract GMXV1FeesModule is PerpFeesModule, Ownable {
     // ====== Variables ====== //
-    IPositionRouter internal immutable gmxPositionRouter;
-    IOrderBook internal immutable gmxOrderbook;
-    IVault internal immutable gmxVault;
+    IPositionRouter internal gmxPositionRouter;
+    IOrderBook internal gmxOrderbook;
+    IVault internal gmxVault;
+
+    function setGmxPositionRouter(
+        IPositionRouter positionRouter
+    ) public onlyOwner {
+        gmxPositionRouter = positionRouter;
+    }
+
+    function setGmxOrderbook(IOrderBook orderBook) public onlyOwner {
+        gmxOrderbook = orderBook;
+    }
+
+    function setGmxVault(IVault vault) public onlyOwner {
+        gmxVault = vault;
+    }
 
     bytes32 internal constant PERPIE_GMX_REFERRAL_CODE =
         0x7065727069650000000000000000000000000000000000000000000000000000;
@@ -37,6 +50,7 @@ contract GMXV1FeesModule is PerpFeesModule {
         bool isLong,
         uint256 /**sizeDelta */
     ) internal view override returns (uint256 price) {
+        // This is the logic from GMX contract
         price = isLong
             ? gmxVault.getMinPrice(token)
             : gmxVault.getMaxPrice(token);
@@ -159,6 +173,9 @@ contract GMXV1FeesModule is PerpFeesModule {
         uint256 _executionFee,
         bool _shouldWrap
     ) external payable {
+        // We just need it for the values
+        _transferMessageValue(msg.sender);
+
         uint256 feeBps;
         {
             (_sizeDelta, _amountIn, , feeBps) = _chargeFee(
@@ -172,20 +189,25 @@ contract GMXV1FeesModule is PerpFeesModule {
         }
         _minOut = _deductFeeBps(_minOut, feeBps);
 
-        gmxOrderbook.createIncreaseOrder{
-            value: _shouldWrap ? _amountIn + _executionFee : msg.value
-        }(
-            _path,
-            _amountIn,
-            _indexToken,
-            _minOut,
-            _sizeDelta,
-            _collateralToken,
-            _isLong,
-            _triggerPrice,
-            _triggerAboveThreshold,
-            _executionFee,
-            _shouldWrap
+        _execute(
+            address(gmxOrderbook),
+            abi.encodeCall(
+                IOrderBook.createIncreaseOrder,
+                (
+                    _path,
+                    _amountIn,
+                    _indexToken,
+                    _minOut,
+                    _sizeDelta,
+                    _collateralToken,
+                    _isLong,
+                    _triggerPrice,
+                    _triggerAboveThreshold,
+                    _executionFee,
+                    _shouldWrap
+                )
+            ),
+            _shouldWrap ? _amountIn + _executionFee : msg.value
         );
     }
 }

@@ -3,6 +3,9 @@ src = "src"
 out = "out"
 libs = ["lib"]
 
+[fuzz]
+max-test-rejects = 100000000000053600
+
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config
 
 [rpc_endpoints]

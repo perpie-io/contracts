@@ -81,6 +81,8 @@ interface IOrderBook {
     ) external payable;
 
     function minExecutionFee() external view returns (uint256);
+
+    function minPurchaseTokenAmountUsd() external view returns (uint256);
 }
 
 interface IVaultUtils {
