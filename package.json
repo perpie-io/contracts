@@ -1,0 +1,15 @@
+{
+  "name": "@perpie/contracts",
+  "version": "1.0.0",
+  "license": "MIT",
+  "scripts": {
+    "build": "forge build",
+    "test": "forge test -vvv",
+    "deploy-gmxv1fees": "source .env && forge script ./script/deployment/GMXV1-Module.s.sol:DeployGmxV1FeesModule --chain-id 42161 --fork-url $ARBITRUM_RPC_URL --etherscan-api-key $ARBISCAN_API_KEY --verifier-url https://api.arbiscan.io/api --broadcast --verify -vvv --ffi  --with-gas-price 100000000",
+    "upgrade-feesmanager": "source .env && forge script ./script/deployment/FeesManager.s.sol:UpgradeFeesManager --chain-id 42161 --fork-url $ARBITRUM_RPC_URL --etherscan-api-key $ARBISCAN_API_KEY --verifier-url https://api.arbiscan.io/api --broadcast --verify -vvv --ffi --with-gas-price 100000000"
+  },
+  "author": "Perpie Papa",
+  "dependencies": {
+    "dotenv-cli": "^7.3.0"
+  }
+}

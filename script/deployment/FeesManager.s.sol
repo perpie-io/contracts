@@ -58,3 +58,5 @@ contract DeployFeesManagerCompletelyNew is MultichainScript {
         }
     }
 }
+
+// forge script ./script/deployment/FeesManager.s.sol:UpgradeFeesManager --chain-id 42161 --fork-url $ARBITRUM_RPC_URL --etherscan-api-key $ARBISCAN_API_KEY --verifier-url https://api.arbiscan.io/api --broadcast --verify -vvv --ffi

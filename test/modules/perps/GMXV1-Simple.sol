@@ -35,7 +35,6 @@ contract GMXV1FeesModuleTest is ArbitrumTest {
     IERC20Metadata wbtc =
         IERC20Metadata(0xf97f4df75117a78c1A5a0DBb814Af92458539FB4);
 
-    // @TODO: Fix the Rhinestone bug and use random account
     address smartAccount = 0x1F09480e2389597ef2173AFF050B0B76De37C103;
 
     address entryPoint = 0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789;
@@ -430,7 +429,7 @@ contract GMXV1FeesModuleTest is ArbitrumTest {
         uint8 leverage,
         uint256 sizeDelta,
         IERC20Metadata token
-    ) internal {
+    ) internal view {
         // Realistic leverage
         vm.assume(leverage > uint8(1) && leverage < uint8(50));
 

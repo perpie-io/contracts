@@ -1,10 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.18;
 import {FeesManager} from "@src/FeesManager.sol";
-import {ERC20ModuleKit} from "@rhinestone/modulekit/integrations/ERC20Actions.sol";
 import {IERC20} from "forge-std/interfaces/IERC20.sol";
-import {ExecutorBase} from "@rhinestone/modulekit/ExecutorBase.sol";
-import {IExecutorManager, ExecutorAction, ModuleExecLib} from "@rhinestone/modulekit/IExecutor.sol";
 import {IExecFromModule, Enum} from "@perpie/modules/IExecFromModule.sol";
 
 abstract contract PerpFeesModule {
@@ -186,6 +183,6 @@ abstract contract PerpFeesModule {
     }
 
     function _isTokenNative(address token) public pure returns (bool isNative) {
-        isNative = token == address(0) || token == ERC20ModuleKit.ETH_ADDR;
+        isNative = token == address(0) || token == 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
     }
 }

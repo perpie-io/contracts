@@ -1,13 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.18;
 
-import {ERC20ModuleKit} from "@rhinestone/modulekit/integrations/ERC20Actions.sol";
-import {ExecutorBase} from "@rhinestone/modulekit/ExecutorBase.sol";
 import {IERC20} from "forge-std/interfaces/IERC20.sol";
 import {PerpFeesModule} from "@perpie/modules/perps/SimplePerpFeesModule.sol";
 import {IPositionRouter, IOrderBook, IVault} from "./Interfaces.sol";
 import {FeesManager} from "@perpie/FeesManager.sol";
-import {IExecutorManager} from "@rhinestone/modulekit/IExecutor.sol";
 import {Ownable} from "@oz/access/Ownable.sol";
 
 contract GMXV1FeesModule is PerpFeesModule, Ownable {
