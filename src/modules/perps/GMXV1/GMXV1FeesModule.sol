@@ -2,7 +2,7 @@
 pragma solidity ^0.8.18;
 
 import {IERC20} from "forge-std/interfaces/IERC20.sol";
-import {PerpFeesModule} from "@perpie/modules/perps/SimplePerpFeesModule.sol";
+import {PerpFeesModule} from "@perpie/modules/perps/AbstractPerpFeesModule.sol";
 import {IPositionRouter, IOrderBook, IVault} from "./Interfaces.sol";
 import {FeesManager} from "@perpie/FeesManager.sol";
 import {Ownable} from "@oz/access/Ownable.sol";
