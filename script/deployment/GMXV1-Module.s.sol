@@ -3,7 +3,7 @@ pragma solidity ^0.8.18;
 import {MultichainScript} from "../Multichain.sol";
 import {FeesManager} from "../../src/FeesManager.sol";
 import {GMXV1FeesModule} from "@perpie/modules/perps/GMXV1/GMXV1FeesModule.sol";
-import {IPositionRouter, IOrderBook, IVault} from "@perpie/modules/perps/GMXV1/Interfaces.sol";
+import {IPositionRouter, IOrderBook, IVault} from "@perpie/interfaces/GMXV1.sol";
 
 contract DeployGmxV1FeesModule is MultichainScript {
     function run() external {

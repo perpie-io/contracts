@@ -5,7 +5,7 @@ import {Test} from "forge-std/Test.sol";
 import {FeesManager} from "@perpie/FeesManager.sol";
 import {IERC20Metadata} from "@oz/token/ERC20/extensions/IERC20Metadata.sol";
 import {GMXV1FeesModule} from "@perpie/modules/perps/GMXV1/GMXV1FeesModule.sol";
-import {IPositionRouter, IVault, IOrderBook} from "@perpie/modules/perps/GMXV1/Interfaces.sol";
+import {IPositionRouter, IVault, IOrderBook} from "@perpie/interfaces/GMXV1.sol";
 import {ArbitrumTest} from "@tests/Chains.sol";
 import {console} from "forge-std/console.sol";
 import {StdStorage, stdStorage} from "forge-std/StdStorage.sol";

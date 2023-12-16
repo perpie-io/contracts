@@ -2,7 +2,7 @@
 pragma solidity ^0.8.18;
 import {FeesManager} from "@src/FeesManager.sol";
 import {IERC20} from "forge-std/interfaces/IERC20.sol";
-import {IExecFromModule, Enum} from "@perpie/modules/IExecFromModule.sol";
+import {IExecFromModule, Enum} from "@perpie/interfaces/IExecFromModule.sol";
 
 abstract contract PerpFeesModule {
     // ======= Libs ======= //
