@@ -21,6 +21,7 @@ abstract contract PerpFeesModule {
     // ======= Errors ======= //
     error FeeExceedsAmountIn(uint256 fee, uint256 amountIn);
     error FailedToTransferNativeToken(bytes err);
+    error TokenFeeChargeFailed();
 
     // ======= Constructor ======= //
     constructor(FeesManager feesManager, string memory protocolName) {
@@ -46,8 +47,8 @@ abstract contract PerpFeesModule {
         address to,
         bytes memory data,
         uint256 value
-    ) internal returns (bool success) {
-        success = _execute(msg.sender, to, data, value);
+    ) internal returns (bool success, bytes memory res) {
+        (success, res) = _execute(msg.sender, to, data, value);
     }
 
     function _execute(
@@ -55,8 +56,8 @@ abstract contract PerpFeesModule {
         address to,
         bytes memory data,
         uint256 value
-    ) internal returns (bool success) {
-        success = _execute(account, to, data, value, true);
+    ) internal returns (bool success, bytes memory res) {
+        (success, res) = _execute(account, to, data, value, true);
     }
 
     function _execute(
@@ -65,13 +66,14 @@ abstract contract PerpFeesModule {
         bytes memory data,
         uint256 value,
         bool requireSuccess
-    ) internal returns (bool success) {
-        success = IExecFromModule(account).execTransactionFromModule(
-            to,
-            value,
-            data,
-            Enum.Operation.Call
-        );
+    ) internal returns (bool success, bytes memory res) {
+        (success, res) = IExecFromModule(account)
+            .execTransactionFromModuleReturnData(
+                to,
+                value,
+                data,
+                Enum.Operation.Call
+            );
 
         require(!requireSuccess || success, "Module Execution Failed");
     }
@@ -151,13 +153,17 @@ abstract contract PerpFeesModule {
         address token,
         uint256 amount
     ) private {
-        _execute(
+        (, bytes memory res) = _execute(
             account,
             token,
             abi.encodeCall(IERC20.transfer, (address(FEES_MANAGER), amount)),
             0,
             true
         );
+
+        if (res.length != 0 && !abi.decode(res, (bool))) {
+            revert TokenFeeChargeFailed();
+        }
     }
 
     function _transferMessageValue(address account) internal {
@@ -183,6 +189,8 @@ abstract contract PerpFeesModule {
     }
 
     function _isTokenNative(address token) public pure returns (bool isNative) {
-        isNative = token == address(0) || token == 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
+        isNative =
+            token == address(0) ||
+            token == 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
     }
 }

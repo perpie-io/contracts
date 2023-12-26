@@ -23,4 +23,11 @@ interface IExecFromModule {
         bytes memory data,
         Enum.Operation operation
     ) external payable returns (bool success);
+
+    function execTransactionFromModuleReturnData(
+        address to,
+        uint256 value,
+        bytes memory data,
+        Enum.Operation operation
+    ) external returns (bool success, bytes memory returnData);
 }
