@@ -22,8 +22,9 @@ contract FeesManager is Ownable, Initializable {
         if (address(token) == address(0)) {
             (bool success, ) = payable(owner()).call(hex"00");
             require(success, "Failed to transfer ETH to owner");
+        } else {
+            token.safeTransfer(owner(), amount);
         }
-        token.safeTransfer(owner(), amount);
     }
 
     function setFeeBps(uint256 newBps) external onlyOwner {
