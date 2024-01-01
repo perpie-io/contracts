@@ -20,7 +20,7 @@ contract FeesManager is Ownable, Initializable {
     function withdraw(IERC20 token, uint256 amount) external onlyOwner {
         // Native withdrawal
         if (address(token) == address(0)) {
-            (bool success, ) = payable(owner()).call{value: amount}(hex"00");
+            (bool success, ) = payable(owner()).call{value: amount}("");
             require(success, "Failed to transfer ETH to owner");
         } else {
             token.safeTransfer(owner(), amount);
