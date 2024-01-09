@@ -15,7 +15,11 @@ abstract contract PerpFeesModule {
         uint256 indexed amountUsd,
         uint256 indexed amountTokens,
         address token,
-        address account
+        address account,
+        uint256 price,
+        uint256 sizeDeltaUsd,
+        uint256 amountIn,
+        bool isLong
     );
 
     // ======= Errors ======= //
@@ -123,11 +127,8 @@ abstract contract PerpFeesModule {
         fee = _calculateFee(sizeDeltaUsd, feeBps);
 
         sizeUsdAfterFees = sizeDeltaUsd - fee;
-        uint256 tokenFee = _usdToToken(
-            tokenIn,
-            fee,
-            _getPrice(tokenIn, isLong, sizeUsdAfterFees)
-        );
+        uint256 price = _getPrice(tokenIn, isLong, sizeUsdAfterFees);
+        uint256 tokenFee = _usdToToken(tokenIn, fee, price);
 
         if (tokenFee >= amountIn) {
             revert FeeExceedsAmountIn(tokenFee, amountIn);
@@ -141,7 +142,17 @@ abstract contract PerpFeesModule {
             _chargeTokenFee(account, tokenIn, tokenFee);
         }
 
-        emit PerpFeeCharged(PROTOCOL_NAME, fee, tokenFee, tokenIn, account);
+        emit PerpFeeCharged(
+            PROTOCOL_NAME,
+            fee,
+            tokenFee,
+            tokenIn,
+            account,
+            price,
+            sizeDeltaUsd,
+            amountIn,
+            isLong
+        );
     }
 
     function _chargeNativeFee(address account, uint256 amount) private {

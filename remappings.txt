@@ -6,3 +6,4 @@
 @perpie/modules/=src/modules/
 @tests/=test/
 solady/=lib/solady/src/
+@gmxv2/=lib/gmx-synthetics/contracts/
