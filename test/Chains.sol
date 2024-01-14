@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.18;
+
 import {Test} from "forge-std/Test.sol";
 
 contract ForkTest is Test {
@@ -14,9 +15,21 @@ contract ForkTest is Test {
     }
 }
 
-contract ArbitrumTest is ForkTest {
+contract ArbiTest is ForkTest {
     function setUp() public virtual override {
         super.setUp();
         vm.selectFork(ARBITRUM);
+        ArbSysMock arbSysMock = new ArbSysMock();
+        vm.etch(address(100), address(arbSysMock).code);
+    }
+}
+
+/**
+ * USe In tests
+ * Mock ArbSys precomp
+ */
+contract ArbSysMock {
+    function arbBlockNumber() external view returns (uint256) {
+        return block.number;
     }
 }

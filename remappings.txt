@@ -1,6 +1,11 @@
 @oz/=lib/openzeppelin-contracts/contracts/
+@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/
+@openzeppelin/contracts-upgradeable/=lib/openzeppelin-contracts-upgradeable/contracts/
+@openzeppelin/=lib/openzeppelin-contracts/
 @gmxv1/=lib/gmx-contracts/contracts/
-@rhinestone/=lib/modulekit/src/
+prb-math/contracts=lib/prb-math/contracts
+hardhat/=lib/hardhat/packages/hardhat-core/
+
 @src/=src/
 @perpie/=src/
 @perpie/modules/=src/modules/

@@ -38,4 +38,4 @@ contract DeployGmxV1FeesModule is MultichainScript {
 }
 
 
-// forge script ./script/deployment/GMXV1-Module.s.sol:DeployGmxV1FeesModule --chain-id 42161 --fork-url $ARBITRUM_RPC_URL --etherscan-api-key $ARBISCAN_API_KEY --verifier-url https://api.arbiscan.io/api --broadcast --verify -vvv --ffi
+// forge script ./script/deployment/GMXV1-Module.s.sol:DeployGmxV1FeesModule --chain-id 42161 --fork-url $ARBITRUM_RPC_URL --etherscan-api-key $ARBISCAN_API_KEY --verifier-url https://api.arbiscan.io/api --broadcast --verify -vvv --ffi --with-gas-price 100000000
