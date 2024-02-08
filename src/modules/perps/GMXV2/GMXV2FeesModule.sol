@@ -13,7 +13,7 @@ import {DataStore} from "@gmxv2/data/DataStore.sol";
 import {GMXV2MedianPriceFeed} from "./PriceFeed.sol";
 
 /**
- * TODO: Integrate V2 Callbacks (afterOrderExecuted, afterOrderCancelled). Keep the funds on here. On afterOrderExecuted, 
+ * TODO: Integrate V2 Callbacks (afterOrderExecuted, afterOrderCancelled). Keep the funds on here. On afterOrderExecuted,
  * transfer to FeesManager. on afterOrderCancelled, transfer back to sender.
  */
 contract GMXV2FeesModule is PerpFeesModule, Ownable {
@@ -36,13 +36,16 @@ contract GMXV2FeesModule is PerpFeesModule, Ownable {
         OrderVault _orderVault,
         Reader _reader,
         DataStore _dataStore,
-        IERC20 weth
-    ) PerpFeesModule(_feesManager, "GMXV2") {
+        IERC20 weth,
+        address owner
+    ) PerpFeesModule(_feesManager, "GMXV2") Ownable() {
         setExchangeRouter(_exchangeRouter);
         setOrderVault(_orderVault);
         setReader(_reader);
         setDataStore(_dataStore);
         WETH = weth;
+        _transferOwnership(owner);
+
     }
     // ====== Admin Methods ===== //
 

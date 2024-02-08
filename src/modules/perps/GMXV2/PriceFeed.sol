@@ -23,6 +23,8 @@ library GMXV2MedianPriceFeed {
     }
 
     function _getPriceFeedPrice(DataStore _dataStore, address token) private view returns (uint256) {
+        uint256 currentTimestamp = Chain.currentTimestamp();
+
         address priceFeedAddress = _dataStore.getAddress(Keys.priceFeedKey(token));
         if (priceFeedAddress == address(0)) {
             revert Errors.InvalidFeedPrice(token, 0);
@@ -45,7 +47,7 @@ library GMXV2MedianPriceFeed {
         }
 
         uint256 heartbeatDuration = _dataStore.getUint(Keys.priceFeedHeartbeatDurationKey(token));
-        if (Chain.currentTimestamp() > timestamp && Chain.currentTimestamp() - timestamp > heartbeatDuration) {
+        if (currentTimestamp > timestamp && currentTimestamp - timestamp > heartbeatDuration) {
             revert Errors.PriceFeedNotUpdated(token, timestamp, heartbeatDuration);
         }
 
