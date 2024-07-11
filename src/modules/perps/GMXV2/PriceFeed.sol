@@ -48,7 +48,7 @@ library GMXV2MedianPriceFeed {
 
         uint256 heartbeatDuration = _dataStore.getUint(Keys.priceFeedHeartbeatDurationKey(token));
         if (currentTimestamp > timestamp && currentTimestamp - timestamp > heartbeatDuration) {
-            revert Errors.PriceFeedNotUpdated(token, timestamp, heartbeatDuration);
+            revert Errors.ChainlinkPriceFeedNotUpdated(token, timestamp, heartbeatDuration);
         }
 
         uint256 price = SafeCast.toUint256(_price);
@@ -63,7 +63,7 @@ library GMXV2MedianPriceFeed {
         uint256 multiplier = _dataStore.getUint(Keys.priceFeedMultiplierKey(token));
 
         if (multiplier == 0) {
-            revert Errors.EmptyPriceFeedMultiplier(token);
+            revert Errors.EmptyChainlinkPriceFeedMultiplier(token);
         }
 
         return multiplier;

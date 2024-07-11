@@ -13,7 +13,7 @@ import {Keys} from "@gmxv2/data/Keys.sol";
 import {Oracle} from "@gmxv2/oracle/Oracle.sol";
 import {IERC20} from "forge-std/interfaces/IERC20.sol";
 import {Market} from "@gmxv2/market/Market.sol";
-import {BaseOrderUtils} from "@gmxv2/order/BaseOrderUtils.sol";
+import {IBaseOrderUtils} from "@gmxv2/order/IBaseOrderUtils.sol";
 import {Order} from "@gmxv2/order/Order.sol";
 import {Strings} from "@oz/utils/Strings.sol";
 import {Market} from "@gmxv2/market/Market.sol";
@@ -50,12 +50,16 @@ contract GMXV2FeesModuleTest is ArbiTest {
 
     function setUp() public virtual override {
         super.setUp();
+
         feesManager = new FeesManager();
         feesManager.setFeeBps(10);
+                        console.log("Created Fees Module");
+
 
         gmxv2FeeModule =
-            new GMXV2FeesModule(feesManager, exchangeRouter, orderVault, reader,dataStore, IERC20(address(weth)));
+        new GMXV2FeesModule(feesManager, exchangeRouter, orderVault, reader,dataStore, IERC20(address(weth)), 0xb9e19940Df2D555123253DAf49A33f4E04C31e81);
 
+        console.log("Created Fees Module");
         vm.prank(entryPoint);
         ModularAccount(address(smartAccount)).enableModule(address(gmxv2FeeModule));
 
@@ -111,16 +115,17 @@ contract GMXV2FeesModuleTest is ArbiTest {
             deal(address(usdc), smartAccount, amountIn);
         }
         bytes32 orderKey = gmxv2FeeModule.createOrder(
-            BaseOrderUtils.CreateOrderParams({
-                addresses: BaseOrderUtils.CreateOrderParamsAddresses({
+            IBaseOrderUtils.CreateOrderParams({
+                addresses: IBaseOrderUtils.CreateOrderParamsAddresses({
                     receiver: smartAccount,
                     callbackContract: address(0),
+                    cancellationReceiver: address(0),
                     uiFeeReceiver: address(feesManager),
                     market: address(BTC_USDC_MARKET),
                     initialCollateralToken: address(usdc),
                     swapPath: path
                 }),
-                numbers: BaseOrderUtils.CreateOrderParamsNumbers({
+                numbers: IBaseOrderUtils.CreateOrderParamsNumbers({
                     sizeDeltaUsd: _sizeDelta,
                     initialCollateralDeltaAmount: 0,
                     triggerPrice: 0,
@@ -133,7 +138,8 @@ contract GMXV2FeesModuleTest is ArbiTest {
                 decreasePositionSwapType: Order.DecreasePositionSwapType.NoSwap,
                 isLong: _isLong,
                 shouldUnwrapNativeToken: false,
-                referralCode: bytes32(0)
+                referralCode: bytes32(0),
+                autoCancel: false
             }),
             amountIn
         );
@@ -218,7 +224,9 @@ contract GMXV2FeesModuleTest is ArbiTest {
         bytes[] memory allResults = abi.decode(result, (bytes[]));
         OracleUtils.SimulatePricesParams memory simulationParams = OracleUtils.SimulatePricesParams({
             primaryTokens: new address[](allResults.length),
-            primaryPrices: new Price.Props[](allResults.length)
+            primaryPrices: new Price.Props[](allResults.length),
+            minTimestamp: 0,
+            maxTimestamp: type(uint256).max
         });
 
         for (uint256 i; i < allResults.length; i++) {

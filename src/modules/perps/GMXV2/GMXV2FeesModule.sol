@@ -6,7 +6,7 @@ import {PerpFeesModule} from "@perpie/modules/perps/AbstractPerpFeesModule.sol";
 import {FeesManager} from "@perpie/FeesManager.sol";
 import {Ownable} from "@oz/access/Ownable.sol";
 import {ExchangeRouter} from "@gmxv2/router/ExchangeRouter.sol";
-import {BaseOrderUtils} from "@gmxv2/order/BaseOrderUtils.sol";
+import {IBaseOrderUtils} from "@gmxv2/order/IBaseOrderUtils.sol";
 import {OrderVault} from "@gmxv2/order/OrderVault.sol";
 import {Reader} from "@gmxv2/reader/Reader.sol";
 import {DataStore} from "@gmxv2/data/DataStore.sol";
@@ -82,7 +82,7 @@ contract GMXV2FeesModule is PerpFeesModule, Ownable {
     }
 
     // ====== Methods ====== //
-    function createOrder(BaseOrderUtils.CreateOrderParams memory params, uint256 amountIn)
+    function createOrder(IBaseOrderUtils.CreateOrderParams memory params, uint256 amountIn)
         external
         payable
         returns (bytes32 key)
@@ -108,7 +108,7 @@ contract GMXV2FeesModule is PerpFeesModule, Ownable {
     }
 
     // ====== Internal ====== //
-    function _depositCollateralAndExecutionFees(BaseOrderUtils.CreateOrderParams memory params, uint256 amountIn)
+    function _depositCollateralAndExecutionFees(IBaseOrderUtils.CreateOrderParams memory params, uint256 amountIn)
         internal
     {
         address initialCollateralToken = params.addresses.initialCollateralToken;
@@ -131,7 +131,7 @@ contract GMXV2FeesModule is PerpFeesModule, Ownable {
         _execute(address(token), abi.encodeCall(IERC20.transfer, (address(orderVault), amt)), 0);
     }
 
-    function _isDepositingNativeToken(BaseOrderUtils.CreateOrderParams memory params)
+    function _isDepositingNativeToken(IBaseOrderUtils.CreateOrderParams memory params)
         internal
         view
         returns (bool isDepositingNativeToken)

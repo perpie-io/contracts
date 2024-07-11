@@ -18,12 +18,12 @@ contract DeployGmxV2FeesModule is MultichainScript {
 
             address feesManagerProxy = vm.envAddress("FEESMANAGER_PROXY_ADDRESS");
 
-            ExchangeRouter exchangeRouter = ExchangeRouter(0x7C68C7866A64FA2160F78EEaE12217FFbf871fa8);
+            ExchangeRouter exchangeRouter = ExchangeRouter(0x69C527fC77291722b52649E45c838e41be8Bf5d5);
             OrderVault orderVault = OrderVault(payable(0x31eF83a530Fde1B38EE9A18093A333D8Bbbc40D5));
             DataStore dataStore = DataStore(0xFD70de6b91282D8017aA4E741e9Ae325CAb992d8);
-            Reader reader = Reader(0x60a0fF4cDaF0f6D496d71e0bC0fFa86FE8E6B23c);
+            Reader reader = Reader(0x5Ca84c34a381434786738735265b9f3FD814b824);
             GMXV2FeesModule gmxv2 =
-            new GMXV2FeesModule(FeesManager(payable(feesManagerProxy)), exchangeRouter, orderVault, reader,dataStore, IERC20(address(0x82aF49447D8a07e3bd95BD0d56f35241523fBab1)));
+            new GMXV2FeesModule(FeesManager(payable(feesManagerProxy)), exchangeRouter, orderVault, reader,dataStore, IERC20(address(0x82aF49447D8a07e3bd95BD0d56f35241523fBab1)), 0xb9e19940Df2D555123253DAf49A33f4E04C31e81);
 
             (gmxv2);
         }

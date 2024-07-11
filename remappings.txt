@@ -12,3 +12,4 @@ hardhat/=lib/hardhat/packages/hardhat-core/
 @tests/=test/
 solady/=lib/solady/src/
 @gmxv2/=lib/gmx-synthetics/contracts/
+@chainlink/contracts/=lib/chainlink/contracts/
